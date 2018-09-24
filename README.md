@@ -1,2 +1,2 @@
-# RTDroid-Examples
+# RTDroid Examples
 Application Examples for RTDroid
