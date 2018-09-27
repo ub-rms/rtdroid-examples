@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:rtdroid="http://fiji-systems.com/schema/rtdroid/0"
+          package="com.fiji.android.example"
+          android:versionCode="1" android:versionName="1.0">
+    <rtdroid:gc maxHeap="64M">
+        <rtdroid:priority scheduler="NORMAL" priority="1"/>
+    </rtdroid:gc>
+    <application android:label="@string/app_name"
+                 android:icon="@drawable/ic_launcher">
+        <service android:name="edu.buffalo.rtdroid.demo.BulkIntentSender">
+            <rtdroid:priority scheduler="FIFO" priority="90"/>
+            <rtdroid:scopeSizes total="5M" persistent="3M" release="2M"/>
+
+            <rtdroid:periodic-task instance-id="task001">
+                <rtdroid:periodic>
+                    <period ms="100" ns="0"/>
+                </rtdroid:periodic>
+                <rtdroid:priority scheduler="FIFO" priority="90"/>
+                <rtdroid:subScopeSize release="500K" />
+            </rtdroid:periodic-task>
+
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="2"
+                           rtdroid:role="observer" android:priority="90">
+                <action android:name="bulkintent.broadcast"/>
+            </intent-filter>
+        </service>
+
+
+        <receiver android:name="edu.buffalo.rtdroid.demo.BulkIntentRcvr">
+            <rtdroid:priority scheduler="FIFO" priority="91"/>
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="2"
+                           rtdroid:role="subscriber">
+                <action android:name="bulkintent.broadcast"/>
+            </intent-filter>
+            <rtdroid:scopeSizes total="17M" persistent="15M" release="2M"/>
+        </receiver>
+
+        <!-- real-time communication channel -->
+        <rtdroid:channel name="bulkintent.broadcast" validation="true">
+            <data rtdroid:size="3000000" android:mimeType="application/octet-stream" />
+            <rtdroid:order>priority-inheritance</rtdroid:order>
+            <rtdroid:execution>component-priority</rtdroid:execution>
+            <rtdroid:drop>priority_and_FIFO</rtdroid:drop>
+            <rtdroid:implementation>broadcast_bulk_intent</rtdroid:implementation>
+        </rtdroid:channel>
+    </application>
+</manifest>

@@ -1,0 +1,29 @@
+export FIVMR_LOG_LEVEL=1
+
+TEST_DIR=`pwd`
+echo $TEST_DIR
+
+#rebuild rtdroid-lib.jar
+cd ../..
+ant clean
+ant compile
+ant jar
+
+#rebuild test cases 
+cd $TEST_DIR
+ant clean
+ant compile
+ant jar
+
+
+$FIVM_HOME/bin/fivmc \
+--more-opt --rt-verbosity-limit 10 --rt-assertions yes          \
+--rt-library RTSJ                                               \
+--gc CMR --g-scoped-memory --g-scope-checks no                  \
+--g-def-immortal-mem 10M                                        \
+--g-def-log true                                                \
+--rtdroid-manifest ./sound.xml -o sound.exe    \
+./builds/jar/sound-mixing.jar
+
+echo "Finish compilation under "$TEST_DIR
+

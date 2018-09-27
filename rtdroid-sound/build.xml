@@ -1,0 +1,33 @@
+<project>
+    <property file="build.properties"/>
+
+    <path id="classpath">
+        <fileset dir="${fiji.dir}/lib" includes="fijicore.jar"/>
+        <fileset dir="${fiji.dir}/lib" includes="rtsj.jar"/>
+        <fileset dir="${fiji.dir}/lib" includes="fivmcommon.jar"/>
+        <fileset dir="${fiji.dir}/lib" includes="fivmr.jar"/>
+        <fileset dir="${fiji.dir}/lib" includes="fijirtdroid.jar"/>
+        <fileset dir="${rtdroid.dir}/builds/jar" includes="rtdroid.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="builds"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="builds/classes"/>
+        <javac srcdir="src" destdir="builds/classes">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar">
+        <mkdir dir="builds/jar"/>
+        <jar destfile="builds/jar/sound-mixing.jar" basedir="builds/classes">
+            <zipgroupfileset dir="${rtdroid.dir}/builds/jar" includes="*.jar"/>
+            <manifest>
+                <attribute name="Class-Path" value="$classpath"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

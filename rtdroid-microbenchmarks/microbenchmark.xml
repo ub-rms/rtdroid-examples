@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:rtdroid="http://fiji-systems.com/schema/rtdroid/0"
+          package="com.fiji.android.example"
+          android:versionCode="1" android:versionName="1.0">
+    <rtdroid:gc maxHeap="64M">
+        <rtdroid:priority scheduler="NORMAL" priority="1"/>
+    </rtdroid:gc>
+    <application android:label="@string/app_name"
+                 android:icon="@drawable/ic_launcher">
+        <service android:name="edu.buffalo.rtdroid.demo.NoisyService">
+            <rtdroid:priority scheduler="FIFO" priority="11"/>
+
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="8"
+                           rtdroid:role="observer">
+                <action android:name="micro.benchmark.broadcast"/>
+            </intent-filter>
+
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="8"
+                           rtdroid:role="observer" android:priority="11">
+                <action android:name="micro.benchmark.msg"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="edu.buffalo.rtdroid.demo.HighPriorityService">
+            <rtdroid:priority scheduler="FIFO" priority="90"/>
+            <rtdroid:scopeSizes total="5M" persistent="3M" release="2M"/>
+
+            <rtdroid:periodic-task instance-id="task001">
+                <rtdroid:periodic>
+                    <period ms="100" ns="0"/>
+                </rtdroid:periodic>
+                <rtdroid:priority scheduler="FIFO" priority="90"/>
+                <rtdroid:subScopeSize release="500K" />
+            </rtdroid:periodic-task>
+
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="2"
+                           rtdroid:role="observer">
+                <action android:name="micro.benchmark.broadcast"/>
+            </intent-filter>
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="2"
+                           rtdroid:role="observer" android:priority="90">
+                <action android:name="micro.benchmark.msg"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="edu.buffalo.rtdroid.demo.MsgPrcService" rtdroid:bound="true">
+            <rtdroid:priority scheduler="FIFO" priority="91"/>
+            <rtdroid:scopeSizes total="5M" persistent="3M" release="2M"/>
+            
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="10"
+                           rtdroid:role="subscriber">
+                <action android:name="micro.benchmark.msg"/>
+            </intent-filter>
+        </service>
+
+        <receiver android:name="edu.buffalo.rtdroid.demo.IntentRcvr">
+            <rtdroid:priority scheduler="FIFO" priority="91"/>
+            <intent-filter rtdroid:realtime="true" rtdroid:concurrentCount="10"
+                           rtdroid:role="subscriber">
+                <action android:name="micro.benchmark.broadcast"/>
+            </intent-filter>
+            <rtdroid:scopeSizes total="5M" persistent="3M" release="2M"/>
+        </receiver>
+
+        <!-- real-time communication channel -->
+        <rtdroid:channel name="micro.benchmark.broadcast" validation="true">
+            <data rtdroid:size="200" android:mimeType="application/octet-stream" />
+            <rtdroid:order>priority-inheritance</rtdroid:order>
+            <rtdroid:execution>component-priority</rtdroid:execution>
+            <rtdroid:drop>priority_and_FIFO</rtdroid:drop>
+            <rtdroid:implementation>broadcast_intent</rtdroid:implementation>
+        </rtdroid:channel>
+        <rtdroid:channel name="micro.benchmark.msg" validation="true">
+            <data rtdroid:size="5" android:mimeType="application/rtdroid.long" />
+            <rtdroid:order>priority-inheritance</rtdroid:order>
+            <rtdroid:execution>undefined</rtdroid:execution>
+            <rtdroid:drop>priority_and_FIFO</rtdroid:drop>
+            <rtdroid:implementation>rt_handler</rtdroid:implementation>
+        </rtdroid:channel>
+    </application>
+</manifest>
